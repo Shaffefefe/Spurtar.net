@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Регистрация</title>
+
+  <!-- Подключаем Firebase через CDN (версия 8.x) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+ <style>
+  body {
+    font-family: 'Inter', sans-serif;
+    background: url('imge.png') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+    margin: 0;
+    padding: 50px;
+    text-align: center;
+    overflow-y: auto;
+  }
+
+  h2 {
+    font-size: 42px;
+    font-weight: 700;
+    margin: 20px 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  input {
+    padding: 12px;
+    margin: 10px;
+    width: 250px;
+    border-radius: 10px;
+    border: 1px solid #fff;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 16px;
+  }
+
+  input::placeholder {
+    color: #ccc;
+  }
+
+  button {
+    padding: 15px 30px;
+    background-color: rgba(255, 255, 255, 0.1); /* Прозрачный фон */
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.5); /* Прозрачная граница */
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s, border-color 0.3s, transform 0.3s ease-in-out;
+    backdrop-filter: blur(8px); /* Эффект блюра */
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); /* Легкая тень */
+  }
+
+  button:hover {
+    background-color: rgba(255, 255, 255, 0.3); /* Немного затемняем фон при наведении */
+    border-color: rgba(255, 255, 255, 0.7); /* Ярче граница при наведении */
+    transform: scale(1.05); /* Легкое увеличение кнопки при наведении */
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.4); /* Увеличение тени при наведении */
+  }
+
+  button:active {
+    transform: scale(1.02); /* Легкое уменьшение кнопки при клике */
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); /* Уменьшение тени при клике */
+  }
+
+  .link {
+    color: #ff9900;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  #registerForm, #loginForm {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    max-width: 400px;
+    margin: 0 auto;
+    backdrop-filter: blur(10px); /* Добавляем эффект блюра на формы */
+  }
+
+  .section {
+    padding: 60px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    margin: 40px auto;
+    border-radius: 12px;
+    max-width: 1100px;
+    backdrop-filter: blur(10px);
+  }
+</style>
+</head>
+<body>
+
+  <h2 id="formTitle">Регистрация</h2>
+
+  <form id="registerForm">
+    <input type="email" id="email" placeholder="Введите email" required><br>
+    <input type="password" id="password" placeholder="Введите пароль" required><br>
+    <button type="submit">Зарегистрироваться</button>
+  </form>
+
+  <p>Уже есть аккаунт? <span class="link" id="switchToLogin">Войти</span></p>
+
+  <form id="loginForm" style="display:none;">
+    <input type="email" id="loginEmail" placeholder="Введите email" required><br>
+    <input type="password" id="loginPassword" placeholder="Введите пароль" required><br>
+    <button type="submit">Войти</button>
+  </form>
+
+<script>
+  // Конфигурация Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyA_awpsKpOfSerzd0OVNeR8UPqoHinbWoQ",
+    authDomain: "database-53b10.firebaseapp.com",
+    databaseURL: "https://database-53b10-default-rtdb.firebaseio.com",
+    projectId: "database-53b10",
+    storageBucket: "database-53b10.firebasestorage.app",
+    messagingSenderId: "310974876061",
+    appId: "1:310974876061:web:07244a7346e71a4799c774",
+    measurementId: "G-5DH0SCCKE8"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  const auth = firebase.auth();
+  const database = firebase.database();
+
+  // Обработчик регистрации
+  document.getElementById('registerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    // Регистрация пользователя через Firebase Authentication
+    auth.createUserWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+
+        // Получаем ссылку на счетчик пользователей в базе данных
+        const usersRef = database.ref('usersCount');
+        
+        // Увеличиваем счетчик пользователей
+        usersRef.transaction(currentCount => {
+          if (currentCount === null) {
+            return 1; // Если это первый пользователь, ставим счетчик равным 1
+          } else {
+            return currentCount + 1; // Увеличиваем счетчик
+          }
+        })
+        .then((result) => {
+          const uidUser = result.snapshot.val(); // Получаем новый счетчик пользователей (uidUser)
+
+          // Данные пользователя, которые будут записаны в Realtime Database
+          const userData = {
+            email: email,
+            uid: user.uid,
+            uidUser: uidUser, // Присваиваем уникальный номер пользователя
+            createdAt: new Date().toISOString(),
+            clientPurchased: "нет"  // Новый пункт, который будет автоматически добавляться
+          };
+
+          // Сохранение данных пользователя в Firebase Realtime Database
+          return database.ref('users/' + user.uid).set(userData);
+        })
+        .then(() => {
+          alert('Регистрация прошла успешно!');
+          window.location.href = 'profile.html'; // Перенаправление на страницу профиля
+        })
+        .catch((error) => {
+          alert('Ошибка регистрации: ' + error.message);
+        });
+      })
+      .catch((error) => {
+        alert('Ошибка регистрации: ' + error.message);
+      });
+  });
+
+  // Обработчик для кнопки "Войти"
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    // Вход пользователя через Firebase Authentication
+    auth.signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        alert('Вход выполнен успешно!');
+        window.location.href = 'profile.html'; // Перенаправление на страницу профиля
+      })
+      .catch((error) => {
+        alert('Ошибка входа: ' + error.message);
+      });
+  });
+
+  // Переключение между формами регистрации и входа
+  document.getElementById('switchToLogin').addEventListener('click', function() {
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('formTitle').textContent = 'Вход';
+    document.getElementById('switchToLogin').style.display = 'none';
+  });
+</script>
+</body>
+</html>
