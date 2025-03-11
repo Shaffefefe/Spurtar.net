@@ -115,6 +115,27 @@
   </form>
 
 <script>
+// Блокируем доступ к инспектору (консоли)
+  document.onkeydown = function(e) {
+    // Отключаем F12
+    if (e.keyCode == 123) {
+      return false;
+    }
+    // Отключаем Ctrl+Shift+I
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+      return false;
+    }
+    // Отключаем F12 + другие сочетания клавиш
+    if (e.ctrlKey && e.keyCode == 85) {
+      return false;
+    }
+  }
+
+  // Блокируем правый клик
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+
   // Конфигурация Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyA_awpsKpOfSerzd0OVNeR8UPqoHinbWoQ",
@@ -141,7 +162,7 @@
     // Регистрация пользователя через Firebase Authentication
     auth.createUserWithEmailAndPassword(email, password)
       .then((userCredential) => {
-        const user = userCredential.user;
+        const user = userCredential.user; // Получаем объект пользователя
 
         // Получаем ссылку на счетчик пользователей в базе данных
         const usersRef = database.ref('usersCount');
@@ -160,18 +181,26 @@
           // Данные пользователя, которые будут записаны в Realtime Database
           const userData = {
             email: email,
-            uid: user.uid,
-            uidUser: uidUser, // Присваиваем уникальный номер пользователя
+            uid: user.uid,            // Сохраняем UID пользователя
+            uidUser: uidUser,         // Присваиваем уникальный номер пользователя
             createdAt: new Date().toISOString(),
-            clientPurchased: "нет"  // Новый пункт, который будет автоматически добавляться
+            clientPurchased: "нет",   // Новый пункт, который будет автоматически добавляться
+            role: "нету"              // Изначальная роль пользователя
           };
 
           // Сохранение данных пользователя в Firebase Realtime Database
           return database.ref('users/' + user.uid).set(userData);
         })
         .then(() => {
-          alert('Регистрация прошла успешно!');
-          window.location.href = 'profile.html'; // Перенаправление на страницу профиля
+          // Отправляем письмо с подтверждением email
+          user.sendEmailVerification()
+            .then(() => {
+              alert('Подтверждение отправлено! Пожалуйста, подтвердите ваш email.');
+              window.location.href = 'check-your-email.html'; // Перенаправление на страницу подтверждения email
+            })
+            .catch((error) => {
+              alert('Ошибка при отправке подтверждения: ' + error.message);
+            });
         })
         .catch((error) => {
           alert('Ошибка регистрации: ' + error.message);
@@ -181,8 +210,7 @@
         alert('Ошибка регистрации: ' + error.message);
       });
   });
-
-  // Обработчик для кнопки "Войти"
+  // Обработчик входа
   document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -192,8 +220,16 @@
     // Вход пользователя через Firebase Authentication
     auth.signInWithEmailAndPassword(email, password)
       .then((userCredential) => {
-        alert('Вход выполнен успешно!');
-        window.location.href = 'profile.html'; // Перенаправление на страницу профиля
+        const user = userCredential.user; // Получаем объект пользователя
+
+        // Проверка, если email не подтвержден
+        if (!user.emailVerified) {
+          alert('Пожалуйста, подтвердите свой email.');
+          return;
+        }
+
+        // Перенаправление после успешного входа
+        window.location.href = 'profile.html'; // Страница после успешного входа
       })
       .catch((error) => {
         alert('Ошибка входа: ' + error.message);
