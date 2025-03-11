@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Проверьте ваш email</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+      color: #333;
+    }
+    h2 {
+      font-size: 30px;
+      font-weight: 600;
+    }
+    p {
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Пожалуйста, подтвердите ваш email</h2>
+  <p>Мы отправили письмо с подтверждением на ваш email. Пожалуйста, проверьте ваш inbox (в том числе папку "Спам").</p>
+  <p>Как только вы подтвердите ваш email, вы будете автоматически перенаправлены в профиль.</p>
+  <p>Если вы не получили письмо, <a href="#" onclick="sendVerification()">отправить снова</a>.</p>
+  <!-- Подключение Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+  <script>
+    // Конфигурация Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_awpsKpOfSerzd0OVNeR8UPqoHinbWoQ",
+      authDomain: "database-53b10.firebaseapp.com",
+      databaseURL: "https://database-53b10-default-rtdb.firebaseio.com",
+      projectId: "database-53b10",
+      storageBucket: "database-53b10.firebasestorage.app",
+      messagingSenderId: "310974876061",
+      appId: "1:310974876061:web:07244a7346e71a4799c774",
+      measurementId: "G-5DH0SCCKE8"
+    };
+
+    // Инициализация Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // Функция для проверки подтверждения email
+    function checkEmailVerification() {
+      const user = firebase.auth().currentUser;
+
+      // Проверка подтверждения email
+      if (user && user.emailVerified) {
+        window.location.href = 'profile.html';  // Перенаправление на профиль
+      }
+    }
+
+    // Регулярно проверяем email пользователя каждую секунду
+    setInterval(checkEmailVerification, 1000);
+    function sendVerification() {
+      firebase.auth().currentUser.sendEmailVerification()
+        .then(function() {
+          alert('Подтверждение повторно отправлено!');
+        })
+        .catch(function(error) {
+          alert('Ошибка при отправке подтверждения: ' + error.message);
+        });
+    }
+  </script>
+</body>
+</html>
