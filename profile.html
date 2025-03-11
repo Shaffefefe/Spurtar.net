@@ -91,9 +91,10 @@
   <div class="profile-info" id="profileInfo">
     <img src="head.jpg" alt="Фото пользователя"> 
     <p><strong>Ваш UID:</strong> <span id="userUid"></span></p> 
+    <p><strong>Роль:</strong> <span id="userRole"></span></p>
     <p><strong>Электронная почта:</strong> <span id="userEmail"></span></p>
     <p><strong>Дата регистрации:</strong> <span id="userCreatedAt"></span></p> <!-- Добавляем отображение даты регистрации -->
-    <button id="logoutButton">Выйти</button>
+    <button id="logoutButton">На главное меню</button>
   </div>
 
   <script>
@@ -126,6 +127,7 @@
             // Отображаем данные на странице
             document.getElementById('userEmail').textContent = userData.email;
             document.getElementById('userUid').textContent = userData.uidUser; 
+	    document.getElementById('userRole').textContent = userData.role;
             document.getElementById('userCreatedAt').textContent = userData.createdAt; // Дата создания
             document.getElementById('userPurchased').textContent = userData.clientPurchased; // Статус покупки
           }
@@ -141,6 +143,26 @@
         window.location.href = 'index.html'; // Перенаправление на страницу входа
       });
     });
+// Блокируем доступ к инспектору (консоли)
+  document.onkeydown = function(e) {
+    // Отключаем F12
+    if (e.keyCode == 123) {
+      return false;
+    }
+    // Отключаем Ctrl+Shift+I
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+      return false;
+    }
+    // Отключаем F12 + другие сочетания клавиш
+    if (e.ctrlKey && e.keyCode == 85) {
+      return false;
+    }
+  }
+
+  // Блокируем правый клик
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
   </script>
 
 </body>
