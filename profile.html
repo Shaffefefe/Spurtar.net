@@ -82,6 +82,27 @@
       cursor: pointer;
       text-decoration: underline;
     }
+
+    #downloadButton {
+      display: none;
+      padding: 15px 30px;
+      background-color: rgba(0, 255, 0, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background-color 0.3s, border-color 0.3s, transform 0.3s ease-in-out;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    #downloadButton:hover {
+      background-color: rgba(0, 255, 0, 0.3);
+      border-color: rgba(255, 255, 255, 0.7);
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+    }
   </style>
 </head>
 <body>
@@ -95,6 +116,8 @@
     <p><strong>Электронная почта:</strong> <span id="userEmail"></span></p>
     <p><strong>Дата регистрации:</strong> <span id="userCreatedAt"></span></p> <!-- Добавляем отображение даты регистрации -->
     <button id="logoutButton">На главное меню</button>
+    <!-- Кнопка для скачивания лоадера, изначально скрыта -->
+    <button id="downloadButton">Скачать лоадер</button>
   </div>
 
   <script>
@@ -126,10 +149,16 @@
           if (userData) {
             // Отображаем данные на странице
             document.getElementById('userEmail').textContent = userData.email;
-            document.getElementById('userUid').textContent = userData.uidUser; 
-	    document.getElementById('userRole').textContent = userData.role;
+            document.getElementById('userUid').textContent = userData.uidUser;
+            document.getElementById('userRole').textContent = userData.role;
             document.getElementById('userCreatedAt').textContent = userData.createdAt; // Дата создания
-            document.getElementById('userPurchased').textContent = userData.clientPurchased; // Статус покупки
+
+            // Проверяем роль пользователя
+            const rolesWithDownloadAccess = ['Создатель', 'Владелец', 'ЗБТ', 'Протер', 'Кодер', 'Друг создателя', 'rosetkaqqe⁧⁧'];
+            if (rolesWithDownloadAccess.includes(userData.role)) {
+              // Показываем кнопку для скачивания
+              document.getElementById('downloadButton').style.display = 'inline-block';
+            }
           }
         });
       } else {
@@ -143,26 +172,35 @@
         window.location.href = 'index.html'; // Перенаправление на страницу входа
       });
     });
-// Блокируем доступ к инспектору (консоли)
-  document.onkeydown = function(e) {
-    // Отключаем F12
-    if (e.keyCode == 123) {
-      return false;
-    }
-    // Отключаем Ctrl+Shift+I
-    if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
-      return false;
-    }
-    // Отключаем F12 + другие сочетания клавиш
-    if (e.ctrlKey && e.keyCode == 85) {
-      return false;
-    }
-  }
 
-  // Блокируем правый клик
-  document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-  });
+    // Обработчик скачивания файла
+    document.getElementById('downloadButton').addEventListener('click', function() {
+      const link = document.createElement('a');
+      link.href = 'Loader.zip'; // Путь к файлу
+      link.download = 'Loader.zip'; // Имя загружаемого файла
+      link.click();
+    });
+
+    // Блокируем доступ к инспектору (консоли)
+    document.onkeydown = function(e) {
+      // Отключаем F12
+      if (e.keyCode == 123) {
+        return false;
+      }
+      // Отключаем Ctrl+Shift+I
+      if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+        return false;
+      }
+      // Отключаем F12 + другие сочетания клавиш
+      if (e.ctrlKey && e.keyCode == 85) {
+        return false;
+      }
+    }
+
+    // Блокируем правый клик
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
   </script>
 
 </body>
